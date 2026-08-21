@@ -306,9 +306,6 @@
             <p style="margin-top: 0.5rem; color: #ff6b6b; font-size: 0.9rem;">
                 <strong>Navegador detectado:</strong> <span id="browserName">Desconhecido</span>
             </p>
-            <p style="margin-top: 0.5rem; color: #ff6b6b; font-size: 0.85rem;">
-                <strong>Sistema:</strong> <span id="osName">Desconhecido</span>
-            </p>
             <p style="margin-top: 1rem; color: #f5c518;">
                 Baixe o Chrome gratuitamente:<br>
                 <a href="https://www.google.com/chrome/" target="_blank" style="color: #f5c518; text-decoration: underline;">
@@ -316,7 +313,7 @@
                 </a>
             </p>
             <p style="margin-top: 1.5rem; font-size: 0.8rem; color: #666; border-top: 1px solid #2a2a2a; padding-top: 1rem;">
-                Apenas Google Chrome oficial é permitido (Windows, Mac, Linux, Android, iOS).
+                Navegadores baseados em Chromium (como Mi Browser, Edge, Opera, Brave) não são suportados.
             </p>
         </div>
     </div>
@@ -365,149 +362,88 @@
             // ============================================================
             function detectBrowser() {
                 const ua = navigator.userAgent;
-                const vendor = navigator.vendor || '';
                 
-                // Lista negra COMPLETA de navegadores baseados em Chromium que NÃO são Chrome
+                // Lista negra de navegadores baseados em Chromium que NÃO são Chrome
                 const blockedChromium = [
-                    'Edg', 'Edge',          // Microsoft Edge
-                    'OPR', 'Opera',         // Opera
-                    'Brave',                // Brave
-                    'MiuiBrowser', 'Miui',  // Mi Browser (Xiaomi)
-                    'VivoBrowser',          // Vivo Browser
-                    'SamsungBrowser',       // Samsung Internet
-                    'UCBrowser', 'UC',      // UC Browser
-                    'QQBrowser', 'QQ',      // QQ Browser
-                    'Baidu',                // Baidu Browser
-                    '360',                  // 360 Browser
-                    'Sogou',                // Sogou Browser
-                    'Huawei', 'HuaweiBrowser', // Huawei Browser
-                    'Honor', 'HonorBrowser',   // Honor Browser
-                    'OppoBrowser',          // Oppo Browser
-                    'RealmeBrowser',        // Realme Browser
-                    'Vivaldi',              // Vivaldi
-                    'Arc',                  // Arc Browser
-                    'CocCoc',               // CocCoc
-                    'Naver', 'Whale',       // Naver Whale
-                    'Yandex',               // Yandex Browser
-                    'Kiwi',                 // Kiwi Browser
-                    'DuckDuckGo',           // DuckDuckGo Browser
-                    'Firefox',              // Mozilla Firefox
-                    'Safari',               // Apple Safari (exclui Chrome no iOS)
-                    'MSIE', 'Trident',      // Internet Explorer
-                    'Presto',               // Opera antigo
-                    'Gecko',                // Firefox e derivados
-                    'WebKit'                // Safari e derivados (mas Chrome também tem, então precisa de mais verificações)
+                    'Edg',      // Edge
+                    'OPR',      // Opera
+                    'Brave',    // Brave
+                    'MiuiBrowser', // Mi Browser (Xiaomi)
+                    'VivoBrowser', // Vivo Browser
+                    'SamsungBrowser', // Samsung Internet
+                    'UCBrowser', // UC Browser
+                    'QQBrowser', // QQ Browser
+                    'Baidu',    // Baidu Browser
+                    '360',      // 360 Browser
+                    'Sogou',    // Sogou Browser
+                    'Huawei',   // Huawei Browser
+                    'Honor',    // Honor Browser
+                    'OppoBrowser', // Oppo Browser
+                    'RealmeBrowser' // Realme Browser
                 ];
                 
                 // Verifica se é algum navegador bloqueado
                 let blocked = false;
                 let browserName = 'Desconhecido';
-                let osName = 'Desconhecido';
-                
-                // Detecta o sistema operacional
-                if (/Windows/.test(ua)) osName = 'Windows';
-                else if (/Mac OS X/.test(ua) || /Macintosh/.test(ua)) osName = 'macOS';
-                else if (/Linux/.test(ua) && !/Android/.test(ua)) osName = 'Linux';
-                else if (/Android/.test(ua)) osName = 'Android';
-                else if (/iPhone|iPad|iPod/.test(ua)) osName = 'iOS';
-                else if (/CrOS/.test(ua)) osName = 'ChromeOS';
                 
                 // Verifica cada navegador da lista negra
                 for (const name of blockedChromium) {
                     if (ua.includes(name)) {
                         blocked = true;
-                        browserName = name;
+                        browserName = name.replace('Browser', '').replace('browser', '');
                         // Formata nomes conhecidos
-                        if (name === 'Edg' || name === 'Edge') browserName = 'Microsoft Edge';
-                        else if (name === 'OPR' || name === 'Opera') browserName = 'Opera';
-                        else if (name === 'MiuiBrowser' || name === 'Miui') browserName = 'Mi Browser';
+                        if (name === 'MiuiBrowser') browserName = 'Mi Browser';
+                        else if (name === 'Edg') browserName = 'Microsoft Edge';
+                        else if (name === 'OPR') browserName = 'Opera';
                         else if (name === 'SamsungBrowser') browserName = 'Samsung Internet';
-                        else if (name === 'UCBrowser' || name === 'UC') browserName = 'UC Browser';
-                        else if (name === 'QQBrowser' || name === 'QQ') browserName = 'QQ Browser';
-                        else if (name === 'Huawei' || name === 'HuaweiBrowser') browserName = 'Huawei Browser';
-                        else if (name === 'Honor' || name === 'HonorBrowser') browserName = 'Honor Browser';
-                        else if (name === 'Vivaldi') browserName = 'Vivaldi';
-                        else if (name === 'CocCoc') browserName = 'CocCoc';
-                        else if (name === 'Whale') browserName = 'Naver Whale';
-                        else if (name === 'Yandex') browserName = 'Yandex Browser';
-                        else if (name === 'Kiwi') browserName = 'Kiwi Browser';
-                        else if (name === 'DuckDuckGo') browserName = 'DuckDuckGo Browser';
+                        else if (name === 'UCBrowser') browserName = 'UC Browser';
                         break;
                     }
                 }
                 
-                // Verificação EXTRA: Chrome PURO deve ter:
-                // 1. "Chrome" no userAgent
-                // 2. "Google Inc." no vendor
-                // 3. NÃO ter nenhum dos navegadores bloqueados
-                const hasChrome = /Chrome/.test(ua);
-                const hasGoogleVendor = vendor.includes('Google Inc.');
+                // Verifica se é Chrome PURO (não pode ter nenhum dos bloqueados)
+                const isPureChrome = /Chrome/.test(ua) && 
+                                   !/Edg/.test(ua) && 
+                                   !/OPR/.test(ua) &&
+                                   !/Brave/.test(ua) &&
+                                   !/MiuiBrowser/.test(ua) &&
+                                   !/VivoBrowser/.test(ua) &&
+                                   !/SamsungBrowser/.test(ua) &&
+                                   !/UCBrowser/.test(ua) &&
+                                   !/QQBrowser/.test(ua) &&
+                                   !/Baidu/.test(ua) &&
+                                   !/360/.test(ua) &&
+                                   !/Sogou/.test(ua) &&
+                                   !/Huawei/.test(ua) &&
+                                   !/Honor/.test(ua) &&
+                                   !/OppoBrowser/.test(ua) &&
+                                   !/RealmeBrowser/.test(ua);
                 
-                // No Android, o Chrome pode ter "wv" (WebView) - também bloqueamos
-                const isWebView = /wv/.test(ua) || /; wv/.test(ua);
-                
-                // No iOS, o Chrome usa Safari como base, então verificamos se tem "CriOS"
-                const isIOSChrome = /CriOS/.test(ua);
-                
-                // Verifica se é Chrome PURO (todas as condições)
-                let isPureChrome = false;
-                
-                if (isIOSChrome) {
-                    // No iOS, Chrome tem CriOS no userAgent
-                    isPureChrome = true;
-                    browserName = 'Google Chrome';
-                } else if (hasChrome && hasGoogleVendor && !blocked && !isWebView) {
-                    // Verifica se NÃO tem nenhum dos bloqueados novamente
-                    let hasBlocked = false;
-                    for (const name of blockedChromium) {
-                        if (ua.includes(name)) {
-                            hasBlocked = true;
-                            break;
-                        }
-                    }
-                    if (!hasBlocked) {
-                        isPureChrome = true;
-                        browserName = 'Google Chrome';
-                    }
+                // Se for bloqueado, define o nome
+                if (blocked && browserName === 'Desconhecido') {
+                    browserName = 'Navegador não suportado';
                 }
                 
-                // Se não for Chrome puro, define como bloqueado
+                // Se não for Chrome puro e não foi detectado como bloqueado, é outro navegador
                 if (!isPureChrome && !blocked) {
                     blocked = true;
                     if (/Firefox/.test(ua)) browserName = 'Mozilla Firefox';
                     else if (/Safari/.test(ua) && !/Chrome/.test(ua)) browserName = 'Apple Safari';
                     else if (/MSIE/.test(ua) || /Trident/.test(ua)) browserName = 'Internet Explorer';
-                    else if (/Edg/.test(ua)) browserName = 'Microsoft Edge';
-                    else if (/OPR/.test(ua)) browserName = 'Opera';
-                    else if (/Brave/.test(ua)) browserName = 'Brave';
                     else browserName = 'Navegador não suportado';
                 }
                 
-                // Se for WebView, bloqueia também
-                if (isWebView && !isIOSChrome) {
-                    blocked = true;
-                    browserName = 'WebView (não suportado)';
-                }
-                
-                return { 
-                    isChrome: isPureChrome, 
-                    browserName, 
-                    blocked,
-                    osName,
-                    isWebView,
-                    isIOSChrome
-                };
+                return { isChrome: isPureChrome, browserName, blocked };
             }
 
-            const { isChrome, browserName, blocked, osName, isWebView, isIOSChrome } = detectBrowser();
+            const { isChrome, browserName, blocked } = detectBrowser();
 
             // Se NÃO for Chrome puro, bloqueia
-            if (!isChrome || blocked || isWebView) {
+            if (!isChrome || blocked) {
                 document.getElementById('mainContainer').style.display = 'none';
                 const blockedContainer = document.getElementById('blockedContainer');
                 blockedContainer.style.display = 'flex';
                 document.getElementById('browserName').textContent = browserName || 'Desconhecido';
-                document.getElementById('osName').textContent = osName || 'Desconhecido';
                 return; // PARA A EXECUÇÃO AQUI
             }
 
@@ -764,7 +700,6 @@
             });
 
             console.log('YCN GERADOR rodando no Chrome puro!');
-            console.log('Sistema:', osName);
         })();
     </script>
 </body>

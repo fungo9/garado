@@ -131,10 +131,26 @@ async function view(id){
     };
   }catch(e){app.innerHTML='<div class="card">Erro ao carregar o paste.</div>'}
 }
+function localDb(){
+  var K='pastescript_v1',mem={};
+  function load(){try{return JSON.parse(localStorage.getItem(K)||'{}')}catch(e){return mem}}
+  function save(o){mem=o;try{localStorage.setItem(K,JSON.stringify(o))}catch(e){}}
+  function snap(id,v){return{id:id,exists:!!v,data:function(){return v}}}
+  var q={
+    orderBy:function(){return q},limit:function(){return q},
+    onSnapshot:function(next){var o=load(),ids=Object.keys(o).sort(function(a,b){return o[b].t-o[a].t});next({docs:ids.map(function(i){return snap(i,o[i])})});return function(){}},
+    doc:function(id){return{
+      get:function(){return Promise.resolve(snap(id,load()[id]))},
+      set:function(d){var o=load();o[id]=d;save(o);return Promise.resolve()},
+      delete:function(){var o=load();delete o[id];save(o);return Promise.resolve()}}}
+  };
+  return{collection:function(){return q}};
+}
 window.addEventListener('hashchange',route);
 home();
 (async function(){
   try{if(window.claude&&claude.use){db=await claude.use('db');user=await claude.use('user');if(user&&user.id)myid=await user.id()}}catch(e){db=null}
+  if(!db)db=localDb();
   route();
 })();
 </script>

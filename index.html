@@ -1,706 +1,142 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YCN Gerador</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PasteScript – Cole seus scripts Roblox</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+color-scheme:dark;--bg:#000;--card:#07100a;--tx:#d9ffe4;--mu:#6fa883;--bd:#14391f;--ac:#39ff14;--code:#020a05}
 
-        body {
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #0a0a0a;
-            padding: 0;
-            margin: 0;
-        }
-
-        .container {
-            max-width: 560px;
-            width: 100%;
-            background: #1a1a1a;
-            border-radius: 0;
-            padding: 2rem 2rem;
-            box-shadow: none;
-            border: 2px solid #f5c518;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .brand h1 {
-            font-size: 2.2rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            color: #f5c518;
-            text-shadow: 0 0 20px rgba(245, 197, 24, 0.3);
-        }
-
-        .brand span {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #1a1a1a;
-            background: #f5c518;
-            padding: 0.2rem 1rem;
-            border-radius: 40px;
-            border: none;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-
-        .login-preview {
-            background: #0d0d0d;
-            border-radius: 1.2rem;
-            padding: 2rem 1.8rem;
-            border: 1px solid #f5c518;
-            margin-bottom: 2rem;
-        }
-
-        .field {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.7rem 0;
-            border-bottom: 1px solid #2a2a2a;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .field:last-of-type {
-            border-bottom: none;
-        }
-
-        .field-label {
-            color: #f5c518;
-            font-size: 0.85rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            min-width: 70px;
-        }
-
-        .field-value {
-            color: #ffffff;
-            font-size: 0.9rem;
-            font-weight: 500;
-            background: #1a1a1a;
-            padding: 0.3rem 1rem;
-            border-radius: 40px;
-            border: 1px solid #f5c518;
-            word-break: break-all;
-            text-align: right;
-            max-width: 75%;
-            font-family: 'Menlo', 'Monaco', monospace;
-            letter-spacing: 0.2px;
-            min-width: 200px;
-            min-height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            flex: 1;
-        }
-
-        .counter {
-            text-align: center;
-            color: #f5c518;
-            font-size: 0.9rem;
-            margin-top: 1rem;
-            padding: 0.7rem;
-            border: 1px solid #2a2a2a;
-            border-radius: 40px;
-            background: #0d0d0d;
-        }
-
-        .counter span {
-            font-weight: 700;
-            font-size: 1.3rem;
-        }
-
-        .cooldown {
-            text-align: center;
-            color: #ff6b6b;
-            font-size: 0.85rem;
-            margin-top: 0.8rem;
-            padding: 0.5rem;
-            border: 1px solid #ff6b6b;
-            border-radius: 40px;
-            background: #1a0a0a;
-            display: none;
-        }
-
-        .cooldown.show {
-            display: block;
-        }
-
-        .cooldown span {
-            font-weight: 700;
-        }
-
-        .actions {
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-            margin-top: 1.8rem;
-        }
-
-        .btn-generate {
-            background: #f5c518;
-            border: none;
-            padding: 1rem 0;
-            border-radius: 60px;
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: #0a0a0a;
-            cursor: pointer;
-            transition: all 0.15s;
-            box-shadow: 0 4px 20px rgba(245, 197, 24, 0.3);
-            letter-spacing: 0.5px;
-            border: 2px solid #f5c518;
-        }
-
-        .btn-generate:hover:not(:disabled) {
-            background: #e6b800;
-            box-shadow: 0 6px 30px rgba(245, 197, 24, 0.5);
-            transform: scale(1.02);
-        }
-
-        .btn-generate:active:not(:disabled) {
-            transform: scale(0.97);
-            background: #d4a800;
-        }
-
-        .btn-generate:disabled {
-            background: #444;
-            border-color: #444;
-            color: #888;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        .btn-copy {
-            background: transparent;
-            border: 2px solid #f5c518;
-            padding: 0.8rem 0;
-            border-radius: 60px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: #f5c518;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-
-        .btn-copy:hover {
-            background: #f5c518;
-            color: #0a0a0a;
-            border-color: #f5c518;
-        }
-
-        .btn-copy:active {
-            transform: scale(0.97);
-            background: #d4a800;
-        }
-
-        .toast-message {
-            margin-top: 1.2rem;
-            text-align: center;
-            font-size: 0.9rem;
-            color: #f5c518;
-            background: #0d0d0d;
-            padding: 0.5rem 0;
-            border-radius: 40px;
-            border: 1px solid #f5c518;
-            opacity: 0;
-            transition: opacity 0.2s;
-            pointer-events: none;
-        }
-
-        .toast-message.show {
-            opacity: 1;
-        }
-
-        .footnote {
-            margin-top: 1.8rem;
-            font-size: 0.7rem;
-            color: #666;
-            text-align: center;
-            letter-spacing: 0.3px;
-            border-top: 1px solid #2a2a2a;
-            padding-top: 1.2rem;
-        }
-
-        .footnote strong {
-            color: #f5c518;
-            font-weight: 600;
-        }
-
-        .blocked-message {
-            display: none;
-            text-align: center;
-            padding: 2rem;
-        }
-
-        .blocked-message h2 {
-            color: #ff6b6b;
-            margin-bottom: 1rem;
-        }
-
-        .blocked-message p {
-            color: #cccccc;
-            line-height: 1.6;
-        }
-
-        .blocked-message .chrome-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            color: #f5c518;
-        }
-
-        html, body {
-            height: 100%;
-            width: 100%;
-        }
-
-        .container {
-            min-height: 100vh;
-            height: 100%;
-        }
-
-        @media screen and (max-width: 480px) {
-            .container {
-                padding: 1.5rem 1rem;
-            }
-            .field-value {
-                min-width: 120px;
-                max-width: 70%;
-                font-size: 0.8rem;
-            }
-            .brand h1 {
-                font-size: 1.8rem;
-            }
-        }
-    </style>
+.card{box-shadow:0 0 18px #39ff1414}header span,header a span{text-shadow:0 0 10px #39ff14}input:focus,textarea:focus{outline:0;border-color:var(--ac);box-shadow:0 0 8px #39ff1466}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.w{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+header a{color:var(--tx);text-decoration:none;font-weight:700;font-size:20px}
+header span{color:var(--ac)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px}
+input,textarea{width:100%;background:var(--code);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:10px;font:inherit}
+textarea{font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;min-height:320px;resize:vertical;margin-top:10px;white-space:pre;overflow:auto}
+button{background:var(--ac);color:#021407;box-shadow:0 0 12px #39ff1455;border:0;border-radius:8px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer}
+button.s{background:var(--code);color:var(--ac);border:1px solid #39ff1466;box-shadow:none}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+pre{background:var(--code);border:1px solid var(--bd);border-radius:8px;padding:12px;overflow-x:auto;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;margin:12px 0 0;max-height:70vh}
+.mu{color:var(--mu);font-size:13px}
+.item{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--bd);cursor:pointer}
+.item:first-child{border-top:0}.item b{word-break:break-word}
+nav{display:flex;gap:6px}nav a{color:var(--mu);text-decoration:none;font-weight:600;padding:7px 12px;border-radius:8px;font-size:14px}nav a.on{background:var(--ac);color:#021407;box-shadow:0 0 12px #39ff1455}
+.warn{color:#d9822b}
+</style>
 </head>
 <body>
-    <!-- CONTEÚDO BLOQUEADO (aparece pra navegadores não-Chrome) -->
-    <div class="container" id="blockedContainer" style="display:none;">
-        <div class="blocked-message" style="display:block;">
-            <div class="chrome-icon">[!]</div>
-            <h2>Navegador não suportado</h2>
-            <p>Este site funciona exclusivamente no <strong>Google Chrome</strong>.</p>
-            <p style="margin-top: 0.5rem; color: #ff6b6b; font-size: 0.9rem;">
-                <strong>Navegador detectado:</strong> <span id="browserName">Desconhecido</span>
-            </p>
-            <p style="margin-top: 1rem; color: #f5c518;">
-                Baixe o Chrome gratuitamente:<br>
-                <a href="https://www.google.com/chrome/" target="_blank" style="color: #f5c518; text-decoration: underline;">
-                    https://www.google.com/chrome/
-                </a>
-            </p>
-            <p style="margin-top: 1.5rem; font-size: 0.8rem; color: #666; border-top: 1px solid #2a2a2a; padding-top: 1rem;">
-                Navegadores baseados em Chromium (como Mi Browser, Edge, Opera, Brave) não são suportados.
-            </p>
-        </div>
-    </div>
-
-    <!-- CONTEÚDO NORMAL (aparece só no Chrome) -->
-    <div class="container" id="mainContainer">
-        <div class="brand">
-            <h1>YCN GERADOR</h1>
-            <span>gerador</span>
-        </div>
-
-        <div class="login-preview">
-            <div class="field">
-                <span class="field-label">Gmail</span>
-                <span class="field-value" id="gmailDisplay">---</span>
-            </div>
-            <div class="field">
-                <span class="field-label">Senha</span>
-                <span class="field-value" id="senhaDisplay">---</span>
-            </div>
-            <div class="counter">
-                <span id="disponiveis">0</span> logins disponíveis
-            </div>
-            <div class="cooldown" id="cooldown">
-                Proximo login disponivel em <span id="timer">7 dias</span>
-            </div>
-        </div>
-
-        <div class="actions">
-            <button class="btn-generate" id="gerarBtn">Gerar login</button>
-            <button class="btn-copy" id="copiarBtn">Copiar dados</button>
-        </div>
-
-        <div class="toast-message" id="toast">Dados copiados</div>
-        <div class="footnote">
-            <strong>YCN GERADOR</strong> · 1 login a cada 7 dias (global)
-        </div>
-    </div>
-
-    <script>
-        (function() {
-            'use strict';
-
-            // ============================================================
-            // DETECÇÃO DE NAVEGADOR - BLOQUEIA TUDO EXCETO CHROME PURO
-            // ============================================================
-            function detectBrowser() {
-                const ua = navigator.userAgent;
-                
-                // Lista negra de navegadores baseados em Chromium que NÃO são Chrome
-                const blockedChromium = [
-                    'Edg',      // Edge
-                    'OPR',      // Opera
-                    'Brave',    // Brave
-                    'MiuiBrowser', // Mi Browser (Xiaomi)
-                    'VivoBrowser', // Vivo Browser
-                    'SamsungBrowser', // Samsung Internet
-                    'UCBrowser', // UC Browser
-                    'QQBrowser', // QQ Browser
-                    'Baidu',    // Baidu Browser
-                    '360',      // 360 Browser
-                    'Sogou',    // Sogou Browser
-                    'Huawei',   // Huawei Browser
-                    'Honor',    // Honor Browser
-                    'OppoBrowser', // Oppo Browser
-                    'RealmeBrowser' // Realme Browser
-                ];
-                
-                // Verifica se é algum navegador bloqueado
-                let blocked = false;
-                let browserName = 'Desconhecido';
-                
-                // Verifica cada navegador da lista negra
-                for (const name of blockedChromium) {
-                    if (ua.includes(name)) {
-                        blocked = true;
-                        browserName = name.replace('Browser', '').replace('browser', '');
-                        // Formata nomes conhecidos
-                        if (name === 'MiuiBrowser') browserName = 'Mi Browser';
-                        else if (name === 'Edg') browserName = 'Microsoft Edge';
-                        else if (name === 'OPR') browserName = 'Opera';
-                        else if (name === 'SamsungBrowser') browserName = 'Samsung Internet';
-                        else if (name === 'UCBrowser') browserName = 'UC Browser';
-                        break;
-                    }
-                }
-                
-                // Verifica se é Chrome PURO (não pode ter nenhum dos bloqueados)
-                const isPureChrome = /Chrome/.test(ua) && 
-                                   !/Edg/.test(ua) && 
-                                   !/OPR/.test(ua) &&
-                                   !/Brave/.test(ua) &&
-                                   !/MiuiBrowser/.test(ua) &&
-                                   !/VivoBrowser/.test(ua) &&
-                                   !/SamsungBrowser/.test(ua) &&
-                                   !/UCBrowser/.test(ua) &&
-                                   !/QQBrowser/.test(ua) &&
-                                   !/Baidu/.test(ua) &&
-                                   !/360/.test(ua) &&
-                                   !/Sogou/.test(ua) &&
-                                   !/Huawei/.test(ua) &&
-                                   !/Honor/.test(ua) &&
-                                   !/OppoBrowser/.test(ua) &&
-                                   !/RealmeBrowser/.test(ua);
-                
-                // Se for bloqueado, define o nome
-                if (blocked && browserName === 'Desconhecido') {
-                    browserName = 'Navegador não suportado';
-                }
-                
-                // Se não for Chrome puro e não foi detectado como bloqueado, é outro navegador
-                if (!isPureChrome && !blocked) {
-                    blocked = true;
-                    if (/Firefox/.test(ua)) browserName = 'Mozilla Firefox';
-                    else if (/Safari/.test(ua) && !/Chrome/.test(ua)) browserName = 'Apple Safari';
-                    else if (/MSIE/.test(ua) || /Trident/.test(ua)) browserName = 'Internet Explorer';
-                    else browserName = 'Navegador não suportado';
-                }
-                
-                return { isChrome: isPureChrome, browserName, blocked };
-            }
-
-            const { isChrome, browserName, blocked } = detectBrowser();
-
-            // Se NÃO for Chrome puro, bloqueia
-            if (!isChrome || blocked) {
-                document.getElementById('mainContainer').style.display = 'none';
-                const blockedContainer = document.getElementById('blockedContainer');
-                blockedContainer.style.display = 'flex';
-                document.getElementById('browserName').textContent = browserName || 'Desconhecido';
-                return; // PARA A EXECUÇÃO AQUI
-            }
-
-            // ============================================================
-            // SÓ EXECUTA DAQUI PRA BAIXO SE FOR CHROME PURO
-            // ============================================================
-            
-            const gmailDisplay = document.getElementById('gmailDisplay');
-            const senhaDisplay = document.getElementById('senhaDisplay');
-            const gerarBtn = document.getElementById('gerarBtn');
-            const copiarBtn = document.getElementById('copiarBtn');
-            const toast = document.getElementById('toast');
-            const disponiveisEl = document.getElementById('disponiveis');
-            const cooldownEl = document.getElementById('cooldown');
-            const timerEl = document.getElementById('timer');
-
-            // ============================================================
-            // LISTA DE LOGINS 
-            // ============================================================
-            const LOGINS = [
-                { gmail: "usuario1@gmail.com", senha: "Senha123!" },
-                { gmail: "usuario2@yahoo.com", senha: "MinhaSenha@456" },
-                { gmail: "contato3@outlook.com", senha: "Segura#789" },
-                { gmail: "teste4@hotmail.com", senha: "Teste$1010" },
-                { gmail: "empresa5@gmail.com", senha: "Corp@2024" },
-                { gmail: "vip6@yahoo.com", senha: "Vip!Senha" },
-                { gmail: "user7@outlook.com", senha: "User#2025" },
-                { gmail: "admin8@gmail.com", senha: "Admin@123" },
-                { gmail: "contato9@hotmail.com", senha: "Contato%99" },
-                { gmail: "dev10@yahoo.com", senha: "Dev$2024" }
-            ];
-
-            const DIAS_COOLDOWN = 7;
-            const STORAGE_INDEX_KEY = 'youcine_indice_global';
-            const STORAGE_LAST_GEN_KEY = 'youcine_ultima_geracao';
-
-            let currentLogin = { gmail: '', senha: '' };
-
-            function getIndiceSalvo() {
-                try {
-                    const idx = localStorage.getItem(STORAGE_INDEX_KEY);
-                    return idx ? parseInt(idx, 10) : 0;
-                } catch(e) {
-                    return 0;
-                }
-            }
-
-            function setIndiceSalvo(idx) {
-                try {
-                    localStorage.setItem(STORAGE_INDEX_KEY, String(idx));
-                } catch(e) {}
-            }
-
-            function getUltimaGeracao() {
-                try {
-                    const data = localStorage.getItem(STORAGE_LAST_GEN_KEY);
-                    return data ? new Date(data) : null;
-                } catch(e) {
-                    return null;
-                }
-            }
-
-            function setUltimaGeracao() {
-                try {
-                    localStorage.setItem(STORAGE_LAST_GEN_KEY, new Date().toISOString());
-                } catch(e) {}
-            }
-
-            function getLoginsDisponiveis() {
-                const idx = getIndiceSalvo();
-                return Math.max(0, LOGINS.length - idx);
-            }
-
-            function todosGerados() {
-                return getIndiceSalvo() >= LOGINS.length;
-            }
-
-            function podeGerar() {
-                const ultimo = getUltimaGeracao();
-                if (!ultimo) return true;
-                const agora = new Date();
-                const diffMs = agora - ultimo;
-                const diffDias = diffMs / (1000 * 60 * 60 * 24);
-                return diffDias >= DIAS_COOLDOWN;
-            }
-
-            function tempoRestante() {
-                const ultimo = getUltimaGeracao();
-                if (!ultimo) return null;
-                const agora = new Date();
-                const diffMs = agora - ultimo;
-                const diffDias = diffMs / (1000 * 60 * 60 * 24);
-                if (diffDias >= DIAS_COOLDOWN) return null;
-                const restanteMs = (DIAS_COOLDOWN * 24 * 60 * 60 * 1000) - diffMs;
-                const dias = Math.floor(restanteMs / (1000 * 60 * 60 * 24));
-                const horas = Math.floor((restanteMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutos = Math.floor((restanteMs % (1000 * 60 * 60)) / (1000 * 60));
-                return { dias, horas, minutos };
-            }
-
-            function atualizarInterface() {
-                const disponiveis = getLoginsDisponiveis();
-                disponiveisEl.textContent = disponiveis;
-
-                const pode = podeGerar();
-                const resto = tempoRestante();
-
-                if (todosGerados()) {
-                    gerarBtn.disabled = true;
-                    cooldownEl.classList.add('show');
-                    timerEl.textContent = 'Todos os logins já foram gerados';
-                    return;
-                }
-
-                if (!pode && resto) {
-                    gerarBtn.disabled = true;
-                    cooldownEl.classList.add('show');
-                    let texto = '';
-                    if (resto.dias > 0) texto += `${resto.dias}d `;
-                    if (resto.horas > 0) texto += `${resto.horas}h `;
-                    texto += `${resto.minutos}min`;
-                    timerEl.textContent = texto;
-                } else {
-                    gerarBtn.disabled = false;
-                    cooldownEl.classList.remove('show');
-                }
-            }
-
-            function mostrarToast(mensagem, duracao = 2000) {
-                toast.textContent = mensagem;
-                toast.classList.add('show');
-                setTimeout(() => toast.classList.remove('show'), duracao);
-            }
-
-            function gerarLoginCompleto() {
-                if (todosGerados()) {
-                    mostrarToast('Todos os logins já foram gerados');
-                    atualizarInterface();
-                    return;
-                }
-
-                if (!podeGerar()) {
-                    mostrarToast('Aguarde 7 dias para gerar outro login');
-                    atualizarInterface();
-                    return;
-                }
-
-                if (LOGINS.length === 0) {
-                    mostrarToast('Nenhum login cadastrado');
-                    return;
-                }
-
-                const indiceAtual = getIndiceSalvo();
-                if (indiceAtual >= LOGINS.length) {
-                    atualizarInterface();
-                    return;
-                }
-
-                const login = LOGINS[indiceAtual];
-                currentLogin = { gmail: login.gmail, senha: login.senha };
-
-                gmailDisplay.textContent = login.gmail;
-                senhaDisplay.textContent = login.senha;
-
-                setIndiceSalvo(indiceAtual + 1);
-                setUltimaGeracao();
-
-                const restantes = getLoginsDisponiveis();
-                disponiveisEl.textContent = restantes;
-
-                mostrarToast(`Login ${indiceAtual + 1} gerado! Restam ${restantes}`);
-
-                atualizarInterface();
-            }
-
-            function copiarDados() {
-                const { gmail, senha } = currentLogin;
-
-                if (!gmail || !senha || gmail === '---' || senha === '---') {
-                    mostrarToast('Nenhum login disponível para copiar');
-                    return;
-                }
-
-                const texto = `${gmail}\n${senha}`;
-
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(texto)
-                        .then(() => mostrarToast('Dados copiados'))
-                        .catch(() => fallbackCopiar(texto));
-                } else {
-                    fallbackCopiar(texto);
-                }
-            }
-
-            function fallbackCopiar(texto) {
-                const textarea = document.createElement('textarea');
-                textarea.value = texto;
-                textarea.style.position = 'fixed';
-                textarea.style.opacity = '0';
-                textarea.style.left = '-9999px';
-                document.body.appendChild(textarea);
-                textarea.select();
-                try {
-                    document.execCommand('copy');
-                    mostrarToast('Dados copiados');
-                } catch(e) {
-                    mostrarToast('Erro ao copiar');
-                }
-                document.body.removeChild(textarea);
-            }
-
-            // Sincronização entre abas
-            window.addEventListener('storage', function(e) {
-                if (e.key === STORAGE_INDEX_KEY || e.key === STORAGE_LAST_GEN_KEY) {
-                    atualizarInterface();
-                    const idx = getIndiceSalvo();
-                    if (idx > 0 && idx <= LOGINS.length) {
-                        const login = LOGINS[idx - 1];
-                        gmailDisplay.textContent = login.gmail;
-                        senhaDisplay.textContent = login.senha;
-                        currentLogin = { gmail: login.gmail, senha: login.senha };
-                    } else {
-                        gmailDisplay.textContent = '---';
-                        senhaDisplay.textContent = '---';
-                        currentLogin = { gmail: '', senha: '' };
-                    }
-                }
-            });
-
-            // Inicialização
-            gmailDisplay.textContent = '---';
-            senhaDisplay.textContent = '---';
-            currentLogin = { gmail: '', senha: '' };
-
-            const idxSalvo = getIndiceSalvo();
-            if (idxSalvo > 0 && idxSalvo <= LOGINS.length) {
-                const login = LOGINS[idxSalvo - 1];
-                gmailDisplay.textContent = login.gmail;
-                senhaDisplay.textContent = login.senha;
-                currentLogin = { gmail: login.gmail, senha: login.senha };
-            }
-
-            atualizarInterface();
-            setInterval(atualizarInterface, 60000);
-
-            gerarBtn.addEventListener('click', gerarLoginCompleto);
-            copiarBtn.addEventListener('click', copiarDados);
-
-            gerarBtn.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    gerarLoginCompleto();
-                }
-            });
-
-            console.log('YCN GERADOR rodando no Chrome puro!');
-        })();
-    </script>
+<div class="w">
+<header><a href="#" id="home">Paste<span>Script</span></a><nav><a href="#meus" id="nm">Meus scripts</a><a href="#" id="np">Paste</a></nav></header>
+<div id="app"></div>
+</div>
+<script>
+var db=null,user=null,myid=null,app=document.getElementById('app'),unsub=null;
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function rid(){var a='abcdefghijkmnpqrstuvwxyz23456789',s='';for(var i=0;i<8;i++)s+=a[Math.floor(Math.random()*a.length)];return s}
+function fmt(t){try{return new Date(t).toLocaleString('pt-BR')}catch(e){return''}}
+function copy(txt,btn){
+  function ok(){var o=btn.textContent;btn.textContent='Copiado!';setTimeout(function(){btn.textContent=o},1200)}
+  try{navigator.clipboard.writeText(txt).then(ok,fb)}catch(e){fb()}
+  function fb(){var t=document.createElement('textarea');t.value=txt;document.body.appendChild(t);t.select();try{document.execCommand('copy');ok()}catch(e){}t.remove()}
+}
+function route(){
+  if(unsub){unsub();unsub=null}
+  document.querySelector('header').style.display='';nav();
+  var h=location.hash.replace('#','');
+  if(h.indexOf('raw-')===0)rawView(h.slice(4));else if(h==='meus')meus();else if(h)view(h);else home();
+}
+async function rawView(id){
+  document.querySelector('header').style.display='none';
+  app.innerHTML='<pre style="margin:0;max-height:none;white-space:pre-wrap;word-break:break-all">Carregando…</pre>';
+  try{
+    var s=await db.collection('pastes').doc(id).get();
+    app.innerHTML='';var p=document.createElement('pre');p.style.cssText='margin:0;max-height:none;white-space:pre-wrap;word-break:break-all';
+    p.textContent=s.exists?s.data().code:'Paste não encontrado.';app.appendChild(p);
+  }catch(e){app.textContent='Erro ao carregar.'}
+}
+function nav(){
+  var h=location.hash.replace('#','');
+  document.getElementById('nm').className=h==='meus'?'on':'';
+  document.getElementById('np').className=(h!=='meus')?'on':'';
+}
+function home(){
+  app.innerHTML='<div class="card"><input id="t" maxlength="80" placeholder="Título do script (ex: Auto Farm)">'+
+  '<textarea id="c" placeholder="-- Cole seu script Lua aqui"></textarea>'+
+  '<div class="row"><button id="go">Criar paste</button><span class="mu" id="msg"></span></div></div>';
+  document.getElementById('go').onclick=create;
+  if(!db)document.getElementById('msg').textContent='Salvamento indisponível nesta visualização.';
+}
+function meus(){
+  app.innerHTML='<div class="card"><b>Meus scripts</b><div id="list" class="mu" style="margin-top:8px">Carregando…</div></div>';
+  var l=document.getElementById('list');
+  if(!db){l.textContent='Faça login no claude.ai pra ver seus scripts.';return}
+  var done=false,tm=setTimeout(function(){if(!done)l.textContent='Não foi possível carregar.'},10000);
+  unsub=db.collection('pastes').orderBy('t','desc').limit(200).onSnapshot(function(s){
+    done=true;clearTimeout(tm);
+    var docs=s.docs.filter(function(d){var o=d.data().owner;return !o||!myid||o===myid});
+    if(!docs.length){l.textContent='Você ainda não hospedou nenhum script.';return}
+    l.innerHTML='';
+    docs.forEach(function(d){var x=d.data(),e=document.createElement('div');e.className='item';
+      e.innerHTML='<b>'+esc(x.title||'Sem título')+'</b><span class="mu">'+fmt(x.t)+'</span>';
+      e.onclick=function(){location.hash=d.id};l.appendChild(e)});
+  },function(){done=true;l.textContent='Erro ao carregar.'});
+}
+async function create(){
+  var c=document.getElementById('c').value,t=document.getElementById('t').value.trim(),m=document.getElementById('msg');
+  if(!c.trim()){m.textContent='Cole um script primeiro.';return}
+  if(c.length>200000){m.textContent='Script grande demais (máx. 200 mil caracteres).';return}
+  if(!db){m.textContent='Salvamento indisponível.';return}
+  var id=rid();m.textContent='Salvando…';
+  try{await db.collection('pastes').doc(id).set({title:t||'Sem título',code:c,t:Date.now(),owner:myid||''});location.hash=id}
+  catch(e){m.className='warn';m.textContent='Sem permissão pra salvar. É preciso ser Contributor ou dono da página.'}
+}
+function editar(id,x){
+  app.innerHTML='<div class="card"><b>Editar script</b><input id="et" maxlength="80" style="margin-top:10px">'+
+  '<textarea id="ec"></textarea><div class="row"><button id="sv">Salvar alterações</button><button class="s" id="cn">Cancelar</button><span class="mu" id="em"></span></div></div>';
+  document.getElementById('et').value=x.title||'';
+  document.getElementById('ec').value=x.code;
+  document.getElementById('cn').onclick=function(){view(id)};
+  document.getElementById('sv').onclick=async function(){
+    var c=document.getElementById('ec').value,t=document.getElementById('et').value.trim(),m=document.getElementById('em');
+    if(!c.trim()){m.textContent='O script não pode ficar vazio.';return}
+    if(c.length>200000){m.textContent='Script grande demais.';return}
+    m.textContent='Salvando…';
+    try{await db.collection('pastes').doc(id).set(Object.assign({},x,{title:t||'Sem título',code:c}));view(id)}
+    catch(e){m.className='warn';m.textContent='Não foi possível salvar.'}
+  };
+}
+async function view(id){
+  app.innerHTML='<div class="card mu">Carregando…</div>';
+  if(!db){app.innerHTML='<div class="card">Faça login no claude.ai pra ver este paste. <button class="s" onclick="location.hash=\'\'">Início</button></div>';return}
+  try{
+    var s=await db.collection('pastes').doc(id).get();
+    if(!s.exists){app.innerHTML='<div class="card">Paste não encontrado. <button class="s" onclick="location.hash=\'\'">Início</button></div>';return}
+    var x=s.data();
+    app.innerHTML='<div class="card"><b style="font-size:18px">'+esc(x.title||'Sem título')+'</b><div class="mu">'+fmt(x.t)+' · '+x.code.split('\n').length+' linhas</div>'+
+    '<div class="row"><button id="cp">Copiar script</button><button class="s" id="rw">Raw</button><button class="s" id="ed">Editar</button><button class="s" id="dl" style="color:#e5484d">Deletar</button><button class="s" id="nw">Novo paste</button></div>'+
+    '<pre><code>'+esc(x.code)+'</code></pre></div>';
+    document.getElementById('cp').onclick=function(){copy(x.code,this)};
+    document.getElementById('rw').onclick=function(){location.hash='raw-'+id};
+    document.getElementById('nw').onclick=function(){location.hash=''};
+    document.getElementById('ed').onclick=function(){editar(id,x)};
+    var dl=document.getElementById('dl'),arm=false;
+    dl.onclick=async function(){
+      if(!arm){arm=true;dl.textContent='Confirmar exclusão?';dl.style.background='#e5484d';dl.style.color='#fff';setTimeout(function(){arm=false;dl.textContent='Deletar';dl.style.background='';dl.style.color='#e5484d'},4000);return}
+      try{await db.collection('pastes').doc(id).delete();location.hash='meus'}catch(e){dl.textContent='Sem permissão'}
+    };
+  }catch(e){app.innerHTML='<div class="card">Erro ao carregar o paste.</div>'}
+}
+window.addEventListener('hashchange',route);
+home();
+(async function(){
+  try{if(window.claude&&claude.use){db=await claude.use('db');user=await claude.use('user');if(user&&user.id)myid=await user.id()}}catch(e){db=null}
+  route();
+})();
+</script>
 </body>
 </html>

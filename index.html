@@ -3,156 +3,159 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>PasteScript – Cole seus scripts Roblox</title>
+<title>PasteScript</title>
 <style>
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
-color-scheme:dark;--bg:#000;--card:#07100a;--tx:#d9ffe4;--mu:#6fa883;--bd:#14391f;--ac:#39ff14;--code:#020a05}
-
-.card{box-shadow:0 0 18px #39ff1414}header span,header a span{text-shadow:0 0 10px #39ff14}input:focus,textarea:focus{outline:0;border-color:var(--ac);box-shadow:0 0 8px #39ff1466}
+:root{color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#000;--card:#07100a;--tx:#d9ffe4;--mu:#6fa883;--bd:#14391f;--ac:#39ff14;--code:#020a05}
 *{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 .w{max-width:860px;margin:0 auto;padding:20px 16px 60px}
 header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
-header a{color:var(--tx);text-decoration:none;font-weight:700;font-size:20px}
-header span{color:var(--ac)}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px}
+header a.logo{color:var(--tx);text-decoration:none;font-weight:700;font-size:20px}
+header a.logo span{color:var(--ac);text-shadow:0 0 10px #39ff14}
+nav{display:flex;gap:6px}nav a{color:var(--mu);text-decoration:none;font-weight:600;padding:7px 12px;border-radius:8px;font-size:14px}
+nav a.on{background:var(--ac);color:#021407;box-shadow:0 0 12px #39ff1455}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 0 18px #39ff1414}
 input,textarea{width:100%;background:var(--code);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:10px;font:inherit}
+input:focus,textarea:focus{outline:0;border-color:var(--ac);box-shadow:0 0 8px #39ff1466}
 textarea{font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;min-height:320px;resize:vertical;margin-top:10px;white-space:pre;overflow:auto}
-button{background:var(--ac);color:#021407;box-shadow:0 0 12px #39ff1455;border:0;border-radius:8px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer}
-button.s{background:var(--code);color:var(--ac);border:1px solid #39ff1466;box-shadow:none}
+button,a.btn{display:inline-block;background:var(--ac);color:#021407;box-shadow:0 0 12px #39ff1455;border:0;border-radius:8px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer;text-decoration:none}
+button.s,a.btn.s{background:var(--code);color:var(--ac);border:1px solid #39ff1466;box-shadow:none}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
 pre{background:var(--code);border:1px solid var(--bd);border-radius:8px;padding:12px;overflow-x:auto;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;margin:12px 0 0;max-height:70vh}
 .mu{color:var(--mu);font-size:13px}
 .item{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--bd);cursor:pointer}
 .item:first-child{border-top:0}.item b{word-break:break-word}
-nav{display:flex;gap:6px}nav a{color:var(--mu);text-decoration:none;font-weight:600;padding:7px 12px;border-radius:8px;font-size:14px}nav a.on{background:var(--ac);color:#021407;box-shadow:0 0 12px #39ff1455}
-.warn{color:#d9822b}
+.warn{color:#ff9c3a}
+a.l{color:var(--ac)}
 </style>
 </head>
 <body>
 <div class="w">
-<header><a href="#" id="home">Paste<span>Script</span></a><nav><a href="#meus" id="nm">Meus scripts</a><a href="#" id="np">Paste</a></nav></header>
+<header><a href="#" class="logo">Paste<span>Script</span></a><nav><a href="#meus" id="nm">Meus scripts</a><a href="#" id="np">Paste</a></nav></header>
 <div id="app"></div>
+<div id="foot" class="mu" style="margin-top:24px"></div>
 </div>
 <script>
-var db=null,user=null,myid=null,app=document.getElementById('app'),unsub=null;
+var FN='pastescript.lua',app=document.getElementById('app'),TK=lsGet('ps_token'),ME=lsGet('ps_login');
+function lsGet(k){try{return localStorage.getItem(k)||''}catch(e){return''}}
+function lsSet(k,v){try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
-function rid(){var a='abcdefghijkmnpqrstuvwxyz23456789',s='';for(var i=0;i<8;i++)s+=a[Math.floor(Math.random()*a.length)];return s}
 function fmt(t){try{return new Date(t).toLocaleString('pt-BR')}catch(e){return''}}
 function copy(txt,btn){
   function ok(){var o=btn.textContent;btn.textContent='Copiado!';setTimeout(function(){btn.textContent=o},1200)}
-  try{navigator.clipboard.writeText(txt).then(ok,fb)}catch(e){fb()}
   function fb(){var t=document.createElement('textarea');t.value=txt;document.body.appendChild(t);t.select();try{document.execCommand('copy');ok()}catch(e){}t.remove()}
+  try{navigator.clipboard.writeText(txt).then(ok,fb)}catch(e){fb()}
+}
+async function gh(path,o){
+  o=o||{};var h={'Accept':'application/vnd.github+json'};
+  if(TK)h.Authorization='Bearer '+TK;if(o.body)h['Content-Type']='application/json';
+  var r=await fetch('https://api.github.com'+path,{method:o.method||'GET',headers:h,body:o.body?JSON.stringify(o.body):undefined});
+  if(r.status===204)return null;
+  var j={};try{j=await r.json()}catch(e){}
+  if(!r.ok){var e=new Error(j.message||('Erro '+r.status));e.status=r.status;throw e}
+  return j;
+}
+function rawUrl(owner,id){return'https://gist.githubusercontent.com/'+owner+'/'+id+'/raw/'+FN}
+function nav(){var h=location.hash.replace('#','');document.getElementById('nm').className=h==='meus'?'on':'';document.getElementById('np').className=h==='meus'?'':'on'}
+function foot(){
+  var f=document.getElementById('foot');
+  f.innerHTML=TK?'Conectado'+(ME?' como <b>@'+esc(ME)+'</b>':'')+' · <a href="#" class="l" id="out">Desconectar</a>':'';
+  var o=document.getElementById('out');if(o)o.onclick=function(e){e.preventDefault();TK='';ME='';lsSet('ps_token','');lsSet('ps_login','');route()};
+}
+function connectCard(){
+  app.innerHTML='<div class="card"><b>Conectar ao GitHub</b>'+
+  '<p class="mu">Os scripts são salvos como Gists públicos na sua conta, assim cada um ganha um link raw que funciona no loadstring. '+
+  'Crie um token <b>classic</b> com a permissão <b>gist</b> (e só ela) e cole abaixo. O token fica salvo apenas neste navegador.</p>'+
+  '<div class="row"><a class="btn s" target="_blank" rel="noopener" href="https://github.com/settings/tokens/new?scopes=gist&description=PasteScript">Criar token no GitHub</a></div>'+
+  '<input id="tk" type="password" placeholder="ghp_..." style="margin-top:12px" autocomplete="off">'+
+  '<div class="row"><button id="sv">Conectar</button><span class="mu" id="msg"></span></div></div>';
+  document.getElementById('sv').onclick=async function(){
+    var v=document.getElementById('tk').value.trim(),m=document.getElementById('msg');
+    if(!v){m.textContent='Cole o token.';return}
+    m.textContent='Verificando…';TK=v;
+    try{var u=await gh('/user');ME=u.login;lsSet('ps_token',TK);lsSet('ps_login',ME);route()}
+    catch(e){TK='';m.className='warn';m.textContent='Token inválido ou sem permissão.'}
+  };
 }
 function route(){
-  if(unsub){unsub();unsub=null}
-  document.querySelector('header').style.display='';nav();
+  nav();foot();
   var h=location.hash.replace('#','');
-  if(h.indexOf('raw-')===0)rawView(h.slice(4));else if(h==='meus')meus();else if(h)view(h);else home();
-}
-async function rawView(id){
-  document.querySelector('header').style.display='none';
-  app.innerHTML='<pre style="margin:0;max-height:none;white-space:pre-wrap;word-break:break-all">Carregando…</pre>';
-  try{
-    var s=await db.collection('pastes').doc(id).get();
-    app.innerHTML='';var p=document.createElement('pre');p.style.cssText='margin:0;max-height:none;white-space:pre-wrap;word-break:break-all';
-    p.textContent=s.exists?s.data().code:'Paste não encontrado.';app.appendChild(p);
-  }catch(e){app.textContent='Erro ao carregar.'}
-}
-function nav(){
-  var h=location.hash.replace('#','');
-  document.getElementById('nm').className=h==='meus'?'on':'';
-  document.getElementById('np').className=(h!=='meus')?'on':'';
+  if(h==='meus')meus();else if(h)view(h);else home();
 }
 function home(){
+  if(!TK){connectCard();return}
   app.innerHTML='<div class="card"><input id="t" maxlength="80" placeholder="Título do script (ex: Auto Farm)">'+
   '<textarea id="c" placeholder="-- Cole seu script Lua aqui"></textarea>'+
   '<div class="row"><button id="go">Criar paste</button><span class="mu" id="msg"></span></div></div>';
   document.getElementById('go').onclick=create;
-  if(!db)document.getElementById('msg').textContent='Salvamento indisponível nesta visualização.';
-}
-function meus(){
-  app.innerHTML='<div class="card"><b>Meus scripts</b><div id="list" class="mu" style="margin-top:8px">Carregando…</div></div>';
-  var l=document.getElementById('list');
-  if(!db){l.textContent='Faça login no claude.ai pra ver seus scripts.';return}
-  var done=false,tm=setTimeout(function(){if(!done)l.textContent='Não foi possível carregar.'},10000);
-  unsub=db.collection('pastes').orderBy('t','desc').limit(200).onSnapshot(function(s){
-    done=true;clearTimeout(tm);
-    var docs=s.docs.filter(function(d){var o=d.data().owner;return !o||!myid||o===myid});
-    if(!docs.length){l.textContent='Você ainda não hospedou nenhum script.';return}
-    l.innerHTML='';
-    docs.forEach(function(d){var x=d.data(),e=document.createElement('div');e.className='item';
-      e.innerHTML='<b>'+esc(x.title||'Sem título')+'</b><span class="mu">'+fmt(x.t)+'</span>';
-      e.onclick=function(){location.hash=d.id};l.appendChild(e)});
-  },function(){done=true;l.textContent='Erro ao carregar.'});
 }
 async function create(){
   var c=document.getElementById('c').value,t=document.getElementById('t').value.trim(),m=document.getElementById('msg');
   if(!c.trim()){m.textContent='Cole um script primeiro.';return}
-  if(c.length>200000){m.textContent='Script grande demais (máx. 200 mil caracteres).';return}
-  if(!db){m.textContent='Salvamento indisponível.';return}
-  var id=rid();m.textContent='Salvando…';
-  try{await db.collection('pastes').doc(id).set({title:t||'Sem título',code:c,t:Date.now(),owner:myid||''});location.hash=id}
-  catch(e){m.className='warn';m.textContent='Sem permissão pra salvar. É preciso ser Contributor ou dono da página.'}
+  m.className='mu';m.textContent='Salvando…';
+  var f={};f[FN]={content:c};
+  try{var g=await gh('/gists',{method:'POST',body:{description:t||'Sem título',public:true,files:f}});location.hash=g.id}
+  catch(e){m.className='warn';m.textContent='Erro: '+e.message}
+}
+async function meus(){
+  if(!TK){connectCard();return}
+  app.innerHTML='<div class="card"><b>Meus scripts</b><div id="list" class="mu" style="margin-top:8px">Carregando…</div></div>';
+  var l=document.getElementById('list');
+  try{
+    var gs=await gh('/gists?per_page=100');
+    gs=gs.filter(function(g){return g.files&&g.files[FN]});
+    if(!gs.length){l.textContent='Você ainda não hospedou nenhum script.';return}
+    l.innerHTML='';
+    gs.forEach(function(g){var e=document.createElement('div');e.className='item';
+      e.innerHTML='<b>'+esc(g.description||'Sem título')+'</b><span class="mu">'+fmt(g.updated_at)+'</span>';
+      e.onclick=function(){location.hash=g.id};l.appendChild(e)});
+  }catch(e){l.className='warn';l.textContent='Erro ao carregar: '+e.message}
+}
+async function load(id){
+  var g=await gh('/gists/'+id),f=g.files&&g.files[FN];
+  if(!f)throw new Error('Paste não encontrado.');
+  var code=f.content;
+  if(f.truncated){var r=await fetch(f.raw_url);code=await r.text()}
+  return{title:g.description||'Sem título',code:code,t:g.updated_at,owner:g.owner?g.owner.login:ME};
+}
+async function view(id){
+  app.innerHTML='<div class="card mu">Carregando…</div>';
+  try{
+    var x=await load(id),raw=rawUrl(x.owner,id),mine=TK&&ME&&x.owner===ME;
+    app.innerHTML='<div class="card"><b style="font-size:18px">'+esc(x.title)+'</b><div class="mu">'+fmt(x.t)+' · '+x.code.split('\n').length+' linhas</div>'+
+    '<div class="row"><button id="cp">Copiar script</button><a class="btn s" id="rw" target="_blank" rel="noopener" href="'+esc(raw)+'">Raw</a>'+
+    '<button class="s" id="ls">Copiar loadstring</button>'+
+    (mine?'<button class="s" id="ed">Editar</button><button class="s" id="dl" style="color:#ff5c5c">Deletar</button>':'')+
+    '</div><pre><code>'+esc(x.code)+'</code></pre></div>';
+    document.getElementById('cp').onclick=function(){copy(x.code,this)};
+    document.getElementById('ls').onclick=function(){copy('loadstring(game:HttpGet("'+raw+'"))()',this)};
+    if(mine){
+      document.getElementById('ed').onclick=function(){editar(id,x)};
+      var dl=document.getElementById('dl'),arm=false;
+      dl.onclick=async function(){
+        if(!arm){arm=true;dl.textContent='Confirmar exclusão?';dl.style.background='#ff5c5c';dl.style.color='#fff';
+          setTimeout(function(){arm=false;dl.textContent='Deletar';dl.style.background='';dl.style.color='#ff5c5c'},4000);return}
+        try{await gh('/gists/'+id,{method:'DELETE'});location.hash='meus'}catch(e){dl.textContent='Erro: '+e.message}
+      };
+    }
+  }catch(e){app.innerHTML='<div class="card warn">'+esc(e.message)+'</div>'}
 }
 function editar(id,x){
   app.innerHTML='<div class="card"><b>Editar script</b><input id="et" maxlength="80" style="margin-top:10px">'+
   '<textarea id="ec"></textarea><div class="row"><button id="sv">Salvar alterações</button><button class="s" id="cn">Cancelar</button><span class="mu" id="em"></span></div></div>';
-  document.getElementById('et').value=x.title||'';
-  document.getElementById('ec').value=x.code;
+  document.getElementById('et').value=x.title;document.getElementById('ec').value=x.code;
   document.getElementById('cn').onclick=function(){view(id)};
   document.getElementById('sv').onclick=async function(){
     var c=document.getElementById('ec').value,t=document.getElementById('et').value.trim(),m=document.getElementById('em');
     if(!c.trim()){m.textContent='O script não pode ficar vazio.';return}
-    if(c.length>200000){m.textContent='Script grande demais.';return}
-    m.textContent='Salvando…';
-    try{await db.collection('pastes').doc(id).set(Object.assign({},x,{title:t||'Sem título',code:c}));view(id)}
-    catch(e){m.className='warn';m.textContent='Não foi possível salvar.'}
+    m.textContent='Salvando…';var f={};f[FN]={content:c};
+    try{await gh('/gists/'+id,{method:'PATCH',body:{description:t||'Sem título',files:f}});view(id)}
+    catch(e){m.className='warn';m.textContent='Erro: '+e.message}
   };
-}
-async function view(id){
-  app.innerHTML='<div class="card mu">Carregando…</div>';
-  if(!db){app.innerHTML='<div class="card">Faça login no claude.ai pra ver este paste. <button class="s" onclick="location.hash=\'\'">Início</button></div>';return}
-  try{
-    var s=await db.collection('pastes').doc(id).get();
-    if(!s.exists){app.innerHTML='<div class="card">Paste não encontrado. <button class="s" onclick="location.hash=\'\'">Início</button></div>';return}
-    var x=s.data();
-    app.innerHTML='<div class="card"><b style="font-size:18px">'+esc(x.title||'Sem título')+'</b><div class="mu">'+fmt(x.t)+' · '+x.code.split('\n').length+' linhas</div>'+
-    '<div class="row"><button id="cp">Copiar script</button><button class="s" id="rw">Raw</button><button class="s" id="ed">Editar</button><button class="s" id="dl" style="color:#e5484d">Deletar</button><button class="s" id="nw">Novo paste</button></div>'+
-    '<pre><code>'+esc(x.code)+'</code></pre></div>';
-    document.getElementById('cp').onclick=function(){copy(x.code,this)};
-    document.getElementById('rw').onclick=function(){location.hash='raw-'+id};
-    document.getElementById('nw').onclick=function(){location.hash=''};
-    document.getElementById('ed').onclick=function(){editar(id,x)};
-    var dl=document.getElementById('dl'),arm=false;
-    dl.onclick=async function(){
-      if(!arm){arm=true;dl.textContent='Confirmar exclusão?';dl.style.background='#e5484d';dl.style.color='#fff';setTimeout(function(){arm=false;dl.textContent='Deletar';dl.style.background='';dl.style.color='#e5484d'},4000);return}
-      try{await db.collection('pastes').doc(id).delete();location.hash='meus'}catch(e){dl.textContent='Sem permissão'}
-    };
-  }catch(e){app.innerHTML='<div class="card">Erro ao carregar o paste.</div>'}
-}
-function localDb(){
-  var K='pastescript_v1',mem={};
-  function load(){try{return JSON.parse(localStorage.getItem(K)||'{}')}catch(e){return mem}}
-  function save(o){mem=o;try{localStorage.setItem(K,JSON.stringify(o))}catch(e){}}
-  function snap(id,v){return{id:id,exists:!!v,data:function(){return v}}}
-  var q={
-    orderBy:function(){return q},limit:function(){return q},
-    onSnapshot:function(next){var o=load(),ids=Object.keys(o).sort(function(a,b){return o[b].t-o[a].t});next({docs:ids.map(function(i){return snap(i,o[i])})});return function(){}},
-    doc:function(id){return{
-      get:function(){return Promise.resolve(snap(id,load()[id]))},
-      set:function(d){var o=load();o[id]=d;save(o);return Promise.resolve()},
-      delete:function(){var o=load();delete o[id];save(o);return Promise.resolve()}}}
-  };
-  return{collection:function(){return q}};
 }
 window.addEventListener('hashchange',route);
-home();
-(async function(){
-  try{if(window.claude&&claude.use){db=await claude.use('db');user=await claude.use('user');if(user&&user.id)myid=await user.id()}}catch(e){db=null}
-  if(!db)db=localDb();
-  route();
-})();
+route();
 </script>
 </body>
 </html>

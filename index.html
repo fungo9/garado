@@ -68,9 +68,13 @@ function connectCard(){
   '<p class="mu">Os scripts são salvos como Gists públicos na sua conta, assim cada um ganha um link raw que funciona no loadstring. '+
   'Crie um token <b>classic</b> com a permissão <b>gist</b> (e só ela) e cole abaixo. O token fica salvo apenas neste navegador.</p>'+
   '<div class="row"><a class="btn s" target="_blank" rel="noopener" href="https://github.com/settings/tokens/new?scopes=gist&description=PasteScript">Criar token no GitHub</a></div>'+
-  '<input id="tk" type="password" placeholder="ghp_..." style="margin-top:12px" autocomplete="off">'+
-  '<div class="row"><button id="sv">Conectar</button><span class="mu" id="msg"></span></div></div>';
-  document.getElementById('sv').onclick=async function(){
+  '<form id="lf" autocomplete="on" method="post" action="#">'+
+  '<input type="text" name="username" value="PasteScript" autocomplete="username" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">'+
+  '<input id="tk" name="password" type="password" placeholder="ghp_..." style="margin-top:12px" autocomplete="current-password">'+
+  '<div class="row"><button id="sv" type="submit">Conectar</button><span class="mu" id="msg"></span></div></form>'+
+  '<p class="mu" style="margin-top:12px">Dica: quando o Chrome perguntar, toque em <b>Salvar senha</b>. Assim, depois de limpar os dados, o token é preenchido sozinho. Ao limpar, desmarque \'Cookies e dados de sites\' se quiser continuar conectado.</p></div>';
+  document.getElementById('lf').onsubmit=async function(ev){
+    ev.preventDefault();
     var v=document.getElementById('tk').value.trim(),m=document.getElementById('msg');
     if(!v){m.textContent='Cole o token.';return}
     m.textContent='Verificando…';TK=v;

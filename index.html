@@ -218,7 +218,7 @@ async function view(id){
     (mine?'<button class="s" id="ed">Editar</button>'+(x.pub?'<button class="s" id="un">Tornar unlisted</button>':'')+'<button class="s" id="dl" style="color:#ff5c5c">Deletar</button>':'')+
     '</div><div class="mu warn" id="vm"></div><pre><code>'+esc(x.code)+'</code></pre></div>';
     document.getElementById('cp').onclick=function(){copy(x.code,this)};
-    document.getElementById('ls').onclick=function(){copy('loadstring(game:HttpGet("'+raw+'"))()',this)};
+    document.getElementById('ls').onclick=function(){copy('loadstring(game:HttpGet("'+raw+'?"..tick()))()',this)};
     if(mine){
       document.getElementById('ed').onclick=function(){editar(id,x)};
       var un=document.getElementById('un');

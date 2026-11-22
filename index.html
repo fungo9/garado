@@ -179,7 +179,7 @@ async function meus(){
     FOLD.concat(['']).forEach(function(n){
       var it=by[n]||[];if(n===''&&!it.length)return;
       var h=document.createElement('div');h.className='fh';
-      var ht=document.createElement('span');ht.textContent=n?'📁 '+n+' ('+it.length+')':'Sem pasta ('+it.length+')';h.appendChild(ht);
+      var ht=document.createElement('span');ht.textContent=n?'📁 '+n:'Sem pasta';h.appendChild(ht);
       if(n){(function(n,it){
         var db=document.createElement('button');db.type='button';db.className='s';db.textContent='Deletar pasta';
         db.style.cssText='color:#ff5c5c;padding:4px 10px;font-size:12px';

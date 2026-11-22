@@ -28,7 +28,7 @@ pre{background:var(--code);border:1px solid var(--bd);border-radius:8px;padding:
 .item{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--bd);cursor:pointer}
 .item:first-child{border-top:0}.item b{word-break:break-word}
 .warn{color:#ff9c3a}
-.fh{margin:16px 0 2px;font-weight:700;color:var(--ac);font-size:14px}.fh:first-child{margin-top:8px}
+.fh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:16px 0 2px;font-weight:700;color:var(--ac);font-size:14px}.fh:first-child{margin-top:8px}
 .tag{font-size:11px;color:#ff9c3a;border:1px solid #ff9c3a66;border-radius:6px;padding:0 5px;margin-left:6px}
 a.l{color:var(--ac)}
 </style>
@@ -40,7 +40,7 @@ a.l{color:var(--ac)}
 <div id="foot" class="mu" style="margin-top:24px"></div>
 </div>
 <script>
-var FN='pastescript.lua',SEP=' › ',CFG='pastescript-folders.json',FOLD=[],FCFG=[],DEL={},NEW={},CFGID='',LASTF='',app=document.getElementById('app'),TK=lsGet('ps_token'),ME=lsGet('ps_login');
+var FN='pastescript.lua',SEP=' › ',CFG='pastescript-folders.json',FOLD=[],FCFG=[],DEL={},NEW={},DESC={},DELF={},CFGID='',LASTF='',app=document.getElementById('app'),TK=lsGet('ps_token'),ME=lsGet('ps_login');
 function lsGet(k){try{return localStorage.getItem(k)||''}catch(e){return''}}
 function lsSet(k,v){try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
@@ -95,16 +95,17 @@ function mkD(f,t){t=t||'Sem título';return f?f+SEP+t:t}
 function sortF(){FOLD.sort(function(a,b){return a.localeCompare(b)})}
 async function loadFolders(gs){
   if(!gs)gs=await gh('/gists?per_page=100');
-  var cfg=[],set={};
+  var cfg=[],set={};gs.forEach(function(g){if(DESC[g.id]!==undefined)g.description=DESC[g.id]});
   for(var i=0;i<gs.length;i++){var g=gs[i];
     if(g.files&&g.files[CFG]){CFGID=g.id;try{var c=await gh('/gists/'+g.id);cfg=JSON.parse(c.files[CFG].content)||[]}catch(e){}break}}
-  cfg.forEach(function(n){if(n&&FCFG.indexOf(n)<0)FCFG.push(n)});FCFG.forEach(function(n){set[n]=1});
+  cfg.forEach(function(n){if(n&&!DELF[n]&&FCFG.indexOf(n)<0)FCFG.push(n)});FCFG.forEach(function(n){set[n]=1});
   gs.forEach(function(g){if(g.files&&g.files[FN]){var p=parseD(g.description);if(p.f)set[p.f]=1}});
   FOLD=Object.keys(set);sortF();return gs;
 }
 async function addFolder(n){
   n=String(n).replace(/›/g,'').trim().slice(0,40);
   if(!n)throw new Error('Digite o nome da pasta.');
+  delete DELF[n];
   if(FOLD.indexOf(n)<0){
     FCFG.push(n);var f={};f[CFG]={content:JSON.stringify(FCFG)};
     if(CFGID)await gh('/gists/'+CFGID,{method:'PATCH',body:{files:f}});
@@ -112,6 +113,16 @@ async function addFolder(n){
     FOLD.push(n);sortF();
   }
   return n;
+}
+async function delFolder(n,items){
+  for(var i=0;i<items.length;i++){
+    var g=items[i].g,d=mkD('',items[i].t);
+    await gh('/gists/'+g.id,{method:'PATCH',body:{description:d}});
+    DESC[g.id]=d;g.description=d;if(NEW[g.id])NEW[g.id].description=d;
+  }
+  FCFG=FCFG.filter(function(x){return x!==n});DELF[n]=1;
+  FOLD=FOLD.filter(function(x){return x!==n});
+  if(CFGID){var f={};f[CFG]={content:JSON.stringify(FCFG)};await gh('/gists/'+CFGID,{method:'PATCH',body:{files:f}})}
 }
 function folderBox(){
   return '<div class="row"><button class="s" id="nf" type="button">+ Nova pasta</button></div>'+
@@ -168,7 +179,20 @@ async function meus(){
     FOLD.concat(['']).forEach(function(n){
       var it=by[n]||[];if(n===''&&!it.length)return;
       var h=document.createElement('div');h.className='fh';
-      h.textContent=n?'📁 '+n+' ('+it.length+')':'Sem pasta ('+it.length+')';l.appendChild(h);
+      var ht=document.createElement('span');ht.textContent=n?'📁 '+n+' ('+it.length+')':'Sem pasta ('+it.length+')';h.appendChild(ht);
+      if(n){(function(n,it){
+        var db=document.createElement('button');db.type='button';db.className='s';db.textContent='Deletar pasta';
+        db.style.cssText='color:#ff5c5c;padding:4px 10px;font-size:12px';
+        var arm=false;
+        db.onclick=async function(){
+          if(!arm){arm=true;db.textContent=it.length?'Confirmar? Scripts vão p/ "Sem pasta"':'Confirmar exclusão?';db.style.background='#ff5c5c';db.style.color='#fff';
+            setTimeout(function(){arm=false;db.textContent='Deletar pasta';db.style.background='';db.style.color='#ff5c5c'},4000);return}
+          db.disabled=true;db.textContent='Deletando…';
+          try{await delFolder(n,it);meus()}catch(e){db.disabled=false;db.textContent='Erro: '+e.message}
+        };
+        h.appendChild(db);
+      })(n,it)}
+      l.appendChild(h);
       if(!it.length){var em=document.createElement('div');em.className='mu';em.textContent='Pasta vazia.';l.appendChild(em)}
       it.forEach(function(x){var e=document.createElement('div');e.className='item';
         e.innerHTML='<b>'+esc(x.t)+(x.g.public?'<span class="tag">público</span>':'')+'</b><span class="mu">'+fmt(x.g.updated_at)+'</span>';
@@ -228,7 +252,7 @@ function editar(id,x){
     var c=document.getElementById('ec').value,t=document.getElementById('et').value.trim(),fo=document.getElementById('fs').value,m=document.getElementById('em');
     if(!c.trim()){m.textContent='O script não pode ficar vazio.';return}
     m.textContent='Salvando…';var f={};f[FN]={content:c};
-    try{await gh('/gists/'+id,{method:'PATCH',body:{description:mkD(fo,t),files:f}});view(id)}
+    try{var nd=mkD(fo,t);await gh('/gists/'+id,{method:'PATCH',body:{description:nd,files:f}});DESC[id]=nd;if(NEW[id])NEW[id].description=nd;view(id)}
     catch(e){m.className='warn';m.textContent='Erro: '+e.message}
   };
 }

@@ -16,8 +16,9 @@ header a.logo span{color:var(--ac);text-shadow:0 0 10px #39ff14}
 nav{display:flex;gap:6px}nav a{color:var(--mu);text-decoration:none;font-weight:600;padding:7px 12px;border-radius:8px;font-size:14px}
 nav a.on{background:var(--ac);color:#021407;box-shadow:0 0 12px #39ff1455}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 0 18px #39ff1414}
-input,textarea{width:100%;background:var(--code);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:10px;font:inherit}
-input:focus,textarea:focus{outline:0;border-color:var(--ac);box-shadow:0 0 8px #39ff1466}
+input,textarea,select{width:100%;background:var(--code);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:10px;font:inherit}
+input:focus,textarea:focus,select:focus{outline:0;border-color:var(--ac);box-shadow:0 0 8px #39ff1466}
+select{width:auto;min-width:150px;flex:1;max-width:100%}
 textarea{font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;min-height:320px;resize:vertical;margin-top:10px;white-space:pre;overflow:auto}
 button,a.btn{display:inline-block;background:var(--ac);color:#021407;box-shadow:0 0 12px #39ff1455;border:0;border-radius:8px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer;text-decoration:none}
 button.s,a.btn.s{background:var(--code);color:var(--ac);border:1px solid #39ff1466;box-shadow:none}
@@ -27,6 +28,8 @@ pre{background:var(--code);border:1px solid var(--bd);border-radius:8px;padding:
 .item{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--bd);cursor:pointer}
 .item:first-child{border-top:0}.item b{word-break:break-word}
 .warn{color:#ff9c3a}
+.fh{margin:16px 0 2px;font-weight:700;color:var(--ac);font-size:14px}.fh:first-child{margin-top:8px}
+.tag{font-size:11px;color:#ff9c3a;border:1px solid #ff9c3a66;border-radius:6px;padding:0 5px;margin-left:6px}
 a.l{color:var(--ac)}
 </style>
 </head>
@@ -37,7 +40,7 @@ a.l{color:var(--ac)}
 <div id="foot" class="mu" style="margin-top:24px"></div>
 </div>
 <script>
-var FN='pastescript.lua',app=document.getElementById('app'),TK=lsGet('ps_token'),ME=lsGet('ps_login');
+var FN='pastescript.lua',SEP=' › ',CFG='pastescript-folders.json',FOLD=[],FCFG=[],CFGID='',LASTF='',app=document.getElementById('app'),TK=lsGet('ps_token'),ME=lsGet('ps_login');
 function lsGet(k){try{return localStorage.getItem(k)||''}catch(e){return''}}
 function lsSet(k,v){try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
@@ -65,7 +68,7 @@ function foot(){
 }
 function connectCard(){
   app.innerHTML='<div class="card"><b>Conectar ao GitHub</b>'+
-  '<p class="mu">Os scripts são salvos como Gists públicos na sua conta, assim cada um ganha um link raw que funciona no loadstring. '+
+  '<p class="mu">Os scripts são salvos como Gists secretos (unlisted) na sua conta: não aparecem em buscas nem no seu perfil, mas cada um ganha um link raw que funciona no loadstring. '+
   'Crie um token <b>classic</b> com a permissão <b>gist</b> (e só ela) e cole abaixo. O token fica salvo apenas neste navegador.</p>'+
   '<div class="row"><a class="btn s" target="_blank" rel="noopener" href="https://github.com/settings/tokens/new?scopes=gist&description=PasteScript">Criar token no GitHub</a></div>'+
   '<form id="lf" autocomplete="on" method="post" action="#">'+
@@ -87,33 +90,88 @@ function route(){
   var h=location.hash.replace('#','');
   if(h==='meus')meus();else if(h)view(h);else home();
 }
+function parseD(d){d=d||'';var i=d.indexOf(SEP);return i>0?{f:d.slice(0,i),t:d.slice(i+SEP.length)||'Sem título'}:{f:'',t:d||'Sem título'}}
+function mkD(f,t){t=t||'Sem título';return f?f+SEP+t:t}
+function sortF(){FOLD.sort(function(a,b){return a.localeCompare(b)})}
+async function loadFolders(gs){
+  if(!gs)gs=await gh('/gists?per_page=100');
+  var cfg=[],set={};CFGID='';
+  for(var i=0;i<gs.length;i++){var g=gs[i];
+    if(g.files&&g.files[CFG]){CFGID=g.id;try{var c=await gh('/gists/'+g.id);cfg=JSON.parse(c.files[CFG].content)||[]}catch(e){}break}}
+  FCFG=cfg.filter(Boolean);FCFG.forEach(function(n){set[n]=1});
+  gs.forEach(function(g){if(g.files&&g.files[FN]){var p=parseD(g.description);if(p.f)set[p.f]=1}});
+  FOLD=Object.keys(set);sortF();return gs;
+}
+async function addFolder(n){
+  n=String(n).replace(/›/g,'').trim().slice(0,40);
+  if(!n)throw new Error('Digite o nome da pasta.');
+  if(FOLD.indexOf(n)<0){
+    FCFG.push(n);var f={};f[CFG]={content:JSON.stringify(FCFG)};
+    if(CFGID)await gh('/gists/'+CFGID,{method:'PATCH',body:{files:f}});
+    else{var g=await gh('/gists',{method:'POST',body:{description:'PasteScript pastas (não apagar)',public:false,files:f}});CFGID=g.id}
+    FOLD.push(n);sortF();
+  }
+  return n;
+}
+function folderBox(){
+  return '<div class="row"><button class="s" id="nf" type="button">+ Nova pasta</button></div>'+
+  '<div class="row" id="nfb" style="display:none"><input id="nfi" maxlength="40" placeholder="Nome da pasta" style="flex:1;min-width:140px"><button id="nfc" type="button">Criar pasta</button><span class="mu" id="nfm"></span></div>';
+}
+function folderUI(cb){
+  var b=document.getElementById('nf'),box=document.getElementById('nfb'),i=document.getElementById('nfi'),c=document.getElementById('nfc'),m=document.getElementById('nfm');
+  b.onclick=function(){box.style.display=box.style.display==='none'?'flex':'none';if(box.style.display==='flex')i.focus()};
+  c.onclick=async function(){
+    m.className='mu';m.textContent='Criando…';
+    try{var n=await addFolder(i.value);i.value='';box.style.display='none';m.textContent='';cb(n)}
+    catch(e){m.className='warn';m.textContent=e.message}
+  };
+}
+function fillSel(sel){
+  var s=document.getElementById('fs');if(!s)return;
+  s.innerHTML='<option value="">Sem pasta</option>'+FOLD.map(function(n){return'<option value="'+esc(n)+'">📁 '+esc(n)+'</option>'}).join('');
+  s.value=FOLD.indexOf(sel)>=0?sel:'';
+}
 function home(){
   if(!TK){connectCard();return}
   app.innerHTML='<div class="card"><input id="t" maxlength="80" placeholder="Título do script (ex: Auto Farm)">'+
+  '<div class="row"><select id="fs"></select></div>'+folderBox()+
   '<textarea id="c" placeholder="-- Cole seu script Lua aqui"></textarea>'+
   '<div class="row"><button id="go">Criar paste</button><span class="mu" id="msg"></span></div></div>';
+  var s=document.getElementById('fs');fillSel(LASTF);
+  s.onchange=function(){LASTF=this.value};
+  folderUI(function(n){LASTF=n;fillSel(n)});
+  loadFolders().then(function(){var e=document.getElementById('fs');if(e)fillSel(e.value||LASTF)}).catch(function(){});
   document.getElementById('go').onclick=create;
 }
 async function create(){
-  var c=document.getElementById('c').value,t=document.getElementById('t').value.trim(),m=document.getElementById('msg');
+  var c=document.getElementById('c').value,t=document.getElementById('t').value.trim(),fo=document.getElementById('fs').value,m=document.getElementById('msg');
   if(!c.trim()){m.textContent='Cole um script primeiro.';return}
   m.className='mu';m.textContent='Salvando…';
   var f={};f[FN]={content:c};
-  try{var g=await gh('/gists',{method:'POST',body:{description:t||'Sem título',public:true,files:f}});location.hash=g.id}
+  try{var g=await gh('/gists',{method:'POST',body:{description:mkD(fo,t),public:false,files:f}});LASTF=fo;location.hash=g.id}
   catch(e){m.className='warn';m.textContent='Erro: '+e.message}
 }
 async function meus(){
   if(!TK){connectCard();return}
-  app.innerHTML='<div class="card"><b>Meus scripts</b><div id="list" class="mu" style="margin-top:8px">Carregando…</div></div>';
+  app.innerHTML='<div class="card"><b>Meus scripts</b>'+folderBox()+'<div id="list" class="mu" style="margin-top:8px">Carregando…</div></div>';
   var l=document.getElementById('list');
+  folderUI(function(){meus()});
   try{
     var gs=await gh('/gists?per_page=100');
+    await loadFolders(gs);
     gs=gs.filter(function(g){return g.files&&g.files[FN]});
-    if(!gs.length){l.textContent='Você ainda não hospedou nenhum script.';return}
+    if(!gs.length&&!FOLD.length){l.textContent='Você ainda não hospedou nenhum script.';return}
+    var by={};gs.forEach(function(g){var p=parseD(g.description);(by[p.f]=by[p.f]||[]).push({g:g,t:p.t})});
     l.innerHTML='';
-    gs.forEach(function(g){var e=document.createElement('div');e.className='item';
-      e.innerHTML='<b>'+esc(g.description||'Sem título')+'</b><span class="mu">'+fmt(g.updated_at)+'</span>';
-      e.onclick=function(){location.hash=g.id};l.appendChild(e)});
+    FOLD.concat(['']).forEach(function(n){
+      var it=by[n]||[];if(n===''&&!it.length)return;
+      var h=document.createElement('div');h.className='fh';
+      h.textContent=n?'📁 '+n+' ('+it.length+')':'Sem pasta ('+it.length+')';l.appendChild(h);
+      if(!it.length){var em=document.createElement('div');em.className='mu';em.textContent='Pasta vazia.';l.appendChild(em)}
+      it.forEach(function(x){var e=document.createElement('div');e.className='item';
+        e.innerHTML='<b>'+esc(x.t)+(x.g.public?'<span class="tag">público</span>':'')+'</b><span class="mu">'+fmt(x.g.updated_at)+'</span>';
+        e.onclick=function(){location.hash=x.g.id};l.appendChild(e)});
+    });
   }catch(e){l.className='warn';l.textContent='Erro ao carregar: '+e.message}
 }
 async function load(id){
@@ -121,21 +179,30 @@ async function load(id){
   if(!f)throw new Error('Paste não encontrado.');
   var code=f.content;
   if(f.truncated){var r=await fetch(f.raw_url);code=await r.text()}
-  return{title:g.description||'Sem título',code:code,t:g.updated_at,owner:g.owner?g.owner.login:ME};
+  var p=parseD(g.description);
+  return{title:p.t,folder:p.f,code:code,t:g.updated_at,pub:g.public,owner:g.owner?g.owner.login:ME};
 }
 async function view(id){
   app.innerHTML='<div class="card mu">Carregando…</div>';
   try{
     var x=await load(id),raw=rawUrl(x.owner,id),mine=TK&&ME&&x.owner===ME;
-    app.innerHTML='<div class="card"><b style="font-size:18px">'+esc(x.title)+'</b><div class="mu">'+fmt(x.t)+' · '+x.code.split('\n').length+' linhas</div>'+
+    app.innerHTML='<div class="card"><b style="font-size:18px">'+esc(x.title)+'</b><div class="mu">'+(x.folder?'📁 '+esc(x.folder)+' · ':'')+fmt(x.t)+' · '+x.code.split('\n').length+' linhas · '+(x.pub?'<span class="warn">público</span>':'unlisted')+'</div>'+
     '<div class="row"><button id="cp">Copiar script</button><a class="btn s" id="rw" target="_blank" rel="noopener" href="'+esc(raw)+'">Raw</a>'+
     '<button class="s" id="ls">Copiar loadstring</button>'+
-    (mine?'<button class="s" id="ed">Editar</button><button class="s" id="dl" style="color:#ff5c5c">Deletar</button>':'')+
-    '</div><pre><code>'+esc(x.code)+'</code></pre></div>';
+    (mine?'<button class="s" id="ed">Editar</button>'+(x.pub?'<button class="s" id="un">Tornar unlisted</button>':'')+'<button class="s" id="dl" style="color:#ff5c5c">Deletar</button>':'')+
+    '</div><div class="mu warn" id="vm"></div><pre><code>'+esc(x.code)+'</code></pre></div>';
     document.getElementById('cp').onclick=function(){copy(x.code,this)};
     document.getElementById('ls').onclick=function(){copy('loadstring(game:HttpGet("'+raw+'"))()',this)};
     if(mine){
       document.getElementById('ed').onclick=function(){editar(id,x)};
+      var un=document.getElementById('un');
+      if(un)un.onclick=async function(){
+        var m=document.getElementById('vm');m.textContent='Convertendo… (o link muda)';
+        var f={};f[FN]={content:x.code};
+        try{var g=await gh('/gists',{method:'POST',body:{description:mkD(x.folder,x.title),public:false,files:f}});
+          await gh('/gists/'+id,{method:'DELETE'});location.hash=g.id}
+        catch(e){m.textContent='Erro: '+e.message}
+      };
       var dl=document.getElementById('dl'),arm=false;
       dl.onclick=async function(){
         if(!arm){arm=true;dl.textContent='Confirmar exclusão?';dl.style.background='#ff5c5c';dl.style.color='#fff';
@@ -147,14 +214,19 @@ async function view(id){
 }
 function editar(id,x){
   app.innerHTML='<div class="card"><b>Editar script</b><input id="et" maxlength="80" style="margin-top:10px">'+
+  '<div class="row"><select id="fs"></select></div>'+folderBox()+
   '<textarea id="ec"></textarea><div class="row"><button id="sv">Salvar alterações</button><button class="s" id="cn">Cancelar</button><span class="mu" id="em"></span></div></div>';
   document.getElementById('et').value=x.title;document.getElementById('ec').value=x.code;
+  if(x.folder&&FOLD.indexOf(x.folder)<0){FOLD.push(x.folder);sortF()}
+  fillSel(x.folder);
+  folderUI(function(n){fillSel(n)});
+  loadFolders().then(function(){var e=document.getElementById('fs');if(e)fillSel(e.value)}).catch(function(){});
   document.getElementById('cn').onclick=function(){view(id)};
   document.getElementById('sv').onclick=async function(){
-    var c=document.getElementById('ec').value,t=document.getElementById('et').value.trim(),m=document.getElementById('em');
+    var c=document.getElementById('ec').value,t=document.getElementById('et').value.trim(),fo=document.getElementById('fs').value,m=document.getElementById('em');
     if(!c.trim()){m.textContent='O script não pode ficar vazio.';return}
     m.textContent='Salvando…';var f={};f[FN]={content:c};
-    try{await gh('/gists/'+id,{method:'PATCH',body:{description:t||'Sem título',files:f}});view(id)}
+    try{await gh('/gists/'+id,{method:'PATCH',body:{description:mkD(fo,t),files:f}});view(id)}
     catch(e){m.className='warn';m.textContent='Erro: '+e.message}
   };
 }

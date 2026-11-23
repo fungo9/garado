@@ -213,11 +213,12 @@ async function view(id){
   try{
     var x=await load(id),raw=rawUrl(x.owner,id),mine=TK&&ME&&x.owner===ME;
     app.innerHTML='<div class="card"><b style="font-size:18px">'+esc(x.title)+'</b><div class="mu">'+(x.folder?'📁 '+esc(x.folder)+' · ':'')+fmt(x.t)+' · '+x.code.split('\n').length+' linhas · '+(x.pub?'<span class="warn">público</span>':'unlisted')+'</div>'+
-    '<div class="row"><button id="cp">Copiar script</button><a class="btn s" id="rw" target="_blank" rel="noopener" href="'+esc(raw)+'">Raw</a>'+
+    '<div class="row"><button id="cp">Copiar script</button><button class="s" id="rw">Copiar URL</button>'+
     '<button class="s" id="ls">Copiar loadstring</button>'+
     (mine?'<button class="s" id="ed">Editar</button>'+(x.pub?'<button class="s" id="un">Tornar unlisted</button>':'')+'<button class="s" id="dl" style="color:#ff5c5c">Deletar</button>':'')+
     '</div><div class="mu warn" id="vm"></div><pre><code>'+esc(x.code)+'</code></pre></div>';
     document.getElementById('cp').onclick=function(){copy(x.code,this)};
+    document.getElementById('rw').onclick=function(){copy(raw+'?'+Date.now(),this)};
     document.getElementById('ls').onclick=function(){copy('loadstring(game:HttpGet("'+raw+'?"..tick()))()',this)};
     if(mine){
       document.getElementById('ed').onclick=function(){editar(id,x)};
